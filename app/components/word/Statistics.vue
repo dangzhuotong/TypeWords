@@ -11,7 +11,6 @@ import isBetween from 'dayjs/plugin/isBetween'
 import { defineAsyncComponent, inject, watch } from 'vue'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import { msToHourMinute } from '@/core/utils'
-import ChannelIcons from '@/components/channel-icons/ChannelIcons.vue'
 import { useI18n } from 'vue-i18n'
 
 dayjs.extend(isoWeek)
@@ -191,7 +190,6 @@ const encouragementText = $computed(() => {
                 </div>
               </div>
             </div>
-            <ChannelIcons />
           </div>
           <!-- Action Buttons -->
           <div class="summary-actions flex justify-center flex-wrap">

@@ -12,7 +12,6 @@ import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { useInit } from '@/core/composables/useInit.ts'
 import { useI18n } from 'vue-i18n'
 import { Supabase } from '@/core/utils/supabase.ts'
-import MiniProgram from '@/components/MiniProgram.vue'
 import WordCollectPopover from '@/components/word/WordCollectPopover.vue'
 
 const router = useRouter()
@@ -164,7 +163,6 @@ function onMouseLeave() {
       <router-view></router-view>
 
       <div class="absolute right-4 top-4 flex z-1 gap-2" v-if="showIcon">
-        <MiniProgram v-if="settingStore.load && !settingStore.first" />
 
         <div class="relative group">
           <BaseIcon>

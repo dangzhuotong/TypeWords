@@ -39,7 +39,9 @@ import { createStudyTask } from '@/core/composables/practice-words/study-task.ts
 import PrevAndNextWord from '@/components/word/PrevAndNextWord.vue'
 import type { PracticeNotifier } from '@/core/composables/practice-words/practice-flow-types.ts'
 import { usePracticeWordSession } from '@/core/composables/practice-words/usePracticeWordSession.ts'
+import { syncWordPractice, wordPracticeAttempts } from '@/core/utils/learning-sync'
 
+const { learningApiPath } = useRuntimeConfig().public
 const settingStore = useSettingStore()
 const runtimeStore = useRuntimeStore()
 const { toggleTheme } = useTheme()
@@ -227,6 +229,7 @@ async function reloadRemotePracticeSession(): Promise<boolean> {
 }
 
 onMounted(async () => {
+  void syncWordPractice(learningApiPath).catch(console.error)
   //如果是从单词学习主页过来的，就直接使用；否则等待加载
   if (runtimeStore.routeData) {
     await initData(null, true)
@@ -339,7 +342,6 @@ function resetSameWordAfterViewUpdate(previousWord: Word) {
 // 显隐与阶段同步由 Registry applyPhase 负责（Phase 2）
 async function complete() {
   if (!isComplete) {
-    let start = Date.now()
     console.log('全完学完了')
     statStore.wrong = data.allWrongWords.length
     isComplete = true
@@ -364,18 +366,21 @@ async function complete() {
 
       await wordPersistence.clear()
 
-      let trackData = {
-        funSpend: Date.now() - start,
-        name: store.sdict.name,
-        spend: Number(statStore.spend / 1000 / 60).toFixed(1),
-        index: store.sdict.lastLearnIndex,
-        per: store.sdict.perDayStudyNumber,
-        custom: store.sdict.custom,
-        complete: store.sdict.complete,
-        str: '',
+      if (learningApiPath) {
+        const attempts = wordPracticeAttempts(
+          JSON.stringify([route.params.id, statStore.startDate]),
+          Date.now(),
+          Object.keys(data.wrongTimesMap).filter(word => !data.excludeWords.includes(word)),
+          data.allWrongWords,
+          store.fsrsData,
+        )
+        void syncWordPractice(learningApiPath, attempts)
+          .then(result => {
+            if (result === 'signed-out') Toast.warning('本地结算已完成。请先登录同站的橦云学习，再开始下一轮。')
+            if (result === 'synced' && attempts.length) Toast.success('练习记录已同步到橦云学习')
+          })
+          .catch(() => Toast.warning('本地结算已完成，橦云学习同步失败'))
       }
-      trackData.str = `name:${trackData.name},per:${trackData.per},spend:${trackData.spend},index:${trackData.index},funSpend:${trackData.funSpend}`
-      window.umami?.track('endStudyWord', trackData)
     } catch (error) {
       console.error('[practice] 本地结算失败', error)
       Toast.error('结算失败，请重试')

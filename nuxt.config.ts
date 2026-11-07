@@ -130,6 +130,7 @@ export default defineNuxtConfig({
   // 运行时配置
   runtimeConfig: {
     public: {
+      learningApiPath: '/learn/api/v1',
       apiBase: process.env.API_BASE || 'http://localhost/',
       origin: process.env.ORIGIN || 'https://typewords.cc',
       host: process.env.HOST || 'typewords.cc',

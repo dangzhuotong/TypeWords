@@ -4,14 +4,11 @@
  *
  * 从 [id].vue 模板提取，负责：
  * - ConflictNotice（首次输入法冲突提示）
- * - CollectNotice（收藏引导弹窗）
  * - ConflictNotice2（无法输入？弹窗）
  * - Shepherd Tour 初始化
  */
 import { watchOnce } from '@vueuse/core'
-import CollectNotice from '@/components/dialog/CollectNotice.vue'
 import ConflictNotice2 from '@/components/dialog/ConflictNotice2.vue'
-import { useRoute } from 'vue-router'
 import { useSettingStore } from '@/core/stores/setting.ts'
 import { LIB_JS_URL, TourConfig } from '@/core/config/env.ts'
 import { _nextTick, isMobile, loadJsLib, sleep } from '@/core/utils'
@@ -27,10 +24,8 @@ const props = defineProps<IProps>()
 
 void props.dictId
 
-const route = useRoute()
 const settingStore = useSettingStore()
 
-let showCollectNotice = $ref(false)
 let showConflictNotice2 = $ref(false)
 
 function openConflictNotice2() {
@@ -40,13 +35,6 @@ function openConflictNotice2() {
 defineExpose({
   openConflictNotice2,
 })
-
-// 首次加载时显示提示
-if (!route.query.guide) {
-  setTimeout(() => {
-    showCollectNotice = true
-  }, 10000)
-}
 
 // Tour 引导初始化
 watchOnce(
@@ -71,9 +59,6 @@ watchOnce(
               action() {
                 settingStore.first = false
                 tour.next()
-                setTimeout(() => {
-                  showCollectNotice = true
-                }, 10000)
               },
             },
           ],
@@ -87,6 +72,5 @@ watchOnce(
 </script>
 
 <template>
-  <CollectNotice v-model="showCollectNotice" />
   <ConflictNotice2 v-model="showConflictNotice2" />
 </template>
